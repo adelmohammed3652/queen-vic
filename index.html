@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" href="assets/images/G.png" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Victorian Era Exam</title>
+    <style>
+        body {
+            background: #009c9491;
+            color: #ffffff;
+            text-align: center;
+            font-size: 24px;
+        }
+
+        h1 {
+            margin-top: 50px;
+        }
+
+        #name-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        #name-input {
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        #quiz-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .question {
+            margin-top: 20px;
+        }
+
+        .question-label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .question-input {
+            width: 100%;
+            height: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            height: 2.2rem;
+            background: rgb(4, 189, 87);
+            color: rgb(255, 255, 255);
+            border-color: transparent;
+        }
+
+        .btn:hover {
+            height: 2.2rem;
+            background: rgb(4, 189, 87);
+            cursor: pointer;
+            border-color: black;
+        }
+
+        #score {
+            margin-top: 20px;
+        }
+
+        #user-name {
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        #feedback {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        #countdown {
+            margin-top: 20px;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+        }
+
+        /* Transition animation */
+        @keyframes teleport {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        .teleport-animation {
+            animation: teleport 1s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div id="name-container">
+        <h1>Welcome to the Victorian Era Exam</h1>
+        <input type="text" id="name-input" placeholder="Enter your name">
+        <button class="btn" onclick="startQuiz()">Start</button>
+    </div>
+
+    <div id="quiz-container" style="display: none;">
+        <h2 id="user-name"></h2>
+        <div id="phase-container" class="modal">
+            <div class="modal-content">
+                <h3 id="phase-text"></h3>
+            </div>
+        </div>
+        <div id="question-container"></div>
+    </div>
+
+    <script>
+        var currentPhase = 1;
+        var currentQuestion = 1;
+        var totalPhases = 3;
+        var totalQuestionsPerPhase = 5;
+        var score = 0;
+        var userName = "";
+        var countdownInterval = null;
+        var countdownSeconds = 10;
+
+        function startQuiz() {
+            userName = document.getElementById("name-input").value;
+            document.getElementById("name-container").style.display = "none";
+            document.getElementById("quiz-container").style.display = "block";
+            document.getElementById("user-name").textContent = "Welcome, " + userName + "!";
+
+            showPhase(currentPhase);
+        }
+
+        function checkAnswer() {
+            var answer = document.getElementById("question-input").value.toLowerCase();
+            var correctAnswer = getCorrectAnswer();
+
+            if (answer === correctAnswer) {
+                score++;
+                showFeedback("Well done, " + userName + "! That's correct.");
+                currentQuestion++;
+                if (currentQuestion > totalQuestionsPerPhase) {
+                    currentPhase++;
+                    currentQuestion = 1;
+                    if (currentPhase <= totalPhases) {
+                        showPhaseTransition(currentPhase);
+                    } else {
+                        showCompletionMessage();
+                    }
+                } else {
+                    showQuestion();
+                }
+            } else {
+                showFeedback("Oops! That's incorrect. Try again.");
+            }
+        }
+
+        function skipQuestion() {
+            currentQuestion++;
+            if (currentQuestion > totalQuestionsPerPhase) {
+                currentPhase++;
+                currentQuestion = 1;
+                if (currentPhase <= totalPhases) {
+                    showPhaseTransition(currentPhase);
+                } else {
+                    showCompletionMessage();
+                }
+            } else {
+                showQuestion();
+            }
+        }
+
+        function showPhaseTransition(phaseNumber) {
+            var phaseModal = document.getElementById("phase-container");
+            var phaseText = document.getElementById("phase-text");
+            phaseText.textContent = "Phase " + phaseNumber;
+            phaseModal.style.display = "block";
+
+            setTimeout(function() {
+                phaseModal.style.display = "none";
+                showQuestion();
+            }, 300);
+        }
+
+        function showCompletionMessage() {
+            document.getElementById("quiz-container").style.display = "none";
+            document.body.innerHTML = "";
+            document.body.style.backgroundColor = "black";
+
+            var completionMessage = document.createElement("h1");
+            completionMessage.textContent = "Congratulations, " + userName + "! You have completed the Victorian Era Exam.";
+
+            var scoreMessage = document.createElement("p");
+            scoreMessage.textContent = "Your score: " + score + "/" + (totalPhases * totalQuestionsPerPhase);
+
+            var countdownMessage = document.createElement("p");
+            countdownMessage.id = "countdown";
+
+            document.body.appendChild(completionMessage);
+            document.body.appendChild(scoreMessage);
+            document.body.appendChild(countdownMessage);
+
+            startCountdown();
+
+            setTimeout(function() {
+                teleportToNextPage();
+            }, countdownSeconds * 1000);
+        }
+
+        function teleportToNextPage() {
+            document.body.classList.add("teleport-animation");
+            setTimeout(function() {
+                window.location.href = "pip.html";
+            }, 1000);
+        }
+
+        function showPhase(phaseNumber) {
+            document.getElementById("phase-container").innerHTML = "";
+            document.getElementById("phase-container").innerHTML = "<h3 id='phase-text'>Phase " + phaseNumber + "</h3>";
+            showQuestion();
+        }
+
+        function showQuestion() {
+            document.getElementById("question-container").innerHTML = "";
+
+            var questionDiv = document.createElement("div");
+            questionDiv.classList.add("question");
+
+            var questionLabel = document.createElement("label");
+            questionLabel.classList.add("question-label");
+            questionLabel.textContent = "Question " + currentQuestion + ": " + getQuestionText();
+
+            var questionInput = document.createElement("input");
+            questionInput.classList.add("question-input");
+            questionInput.type = "text";
+            questionInput.id = "question-input";
+            questionInput.placeholder = "Answer";
+
+            var submitButton = document.createElement("button");
+            submitButton.classList.add("btn");
+            submitButton.textContent = "Submit";
+            submitButton.onclick = function() {
+                if (questionInput.value.trim() !== "") {
+                    checkAnswer();
+                } else {
+                    showFeedback("Please provide an answer.");
+                }
+            };
+
+            var skipButton = document.createElement("button");
+            skipButton.classList.add("btn");
+            skipButton.textContent = "Skip This Question";
+            skipButton.onclick = function() {
+                skipQuestion();
+            };
+
+            var scoreDisplay = document.createElement("p");
+            scoreDisplay.id = "score";
+            scoreDisplay.textContent = "Score: " + score;
+
+            var feedback = document.createElement("p");
+            feedback.id = "feedback";
+
+            questionDiv.appendChild(questionLabel);
+            questionDiv.appendChild(questionInput);
+            questionDiv.appendChild(submitButton);
+            questionDiv.appendChild(skipButton);
+            questionDiv.appendChild(feedback);
+            document.getElementById("question-container").appendChild(questionDiv);
+            document.getElementById("question-container").appendChild(scoreDisplay);
+        }
+
+        function getQuestionText() {
+            var questionTexts = {
+                1: {
+                    1: "Who was the Queen of England during the Victorian Era?",
+                    2: "Which author wrote the novel 'Pride and Prejudice'?",
+                    3: "What was the name of the periodical founded by Charles Dickens?",
+                    4: "Which event led to a surge in industrialization during the Victorian Era?",
+                    5: "What was the major social class divide during the Victorian Era?"
+                },
+                2: {
+                    1: "What is the name of the iconic detective created by Arthur Conan Doyle?",
+                    2: "Which author wrote the novel 'Jane Eyre'?",
+                    3: "What was the main form of entertainment during the Victorian Era?",
+                    4: "What was the impact of the Great Exhibition of 1851?",
+                    5: "Who was the famous nurse known for her work during the Crimean War?"
+                },
+                3: {
+                    1: "Which architectural style became prominent during the Victorian Era?",
+                    2: "What was the main focus of the Pre-Raphaelite Brotherhood?",
+                    3: "What was the name of the era preceding the Victorian Era?",
+                    4: "What were the key values promoted during the Victorian Era?",
+                    5: "Who was the British Prime Minister during most of the Victorian Era?"
+                }
+            };
+            return questionTexts[currentPhase][currentQuestion];
+        }
+
+        function getCorrectAnswer() {
+            var correctAnswers = {
+                1: {
+                    1: "queen victoria",
+                    2: "jane austen",
+                    3: "household words",
+                    4: "industrial revolution",
+                    5: "class system"
+                },
+                2: {
+                    1: "sherlock holmes",
+                    2: "charlotte bronte",
+                    3: "theatre",
+                    4: "showcased technological advancements",
+                    5: "florence nightingale"
+                },
+                3: {
+                    1: "gothic revival",
+                    2: "artistic reform",
+                    3: "georgian era",
+                    4: "morality, respectability, and social progress",
+                    5: "benjamin disraeli"
+                }
+            };
+            return correctAnswers[currentPhase][currentQuestion];
+        }
+
+        function showFeedback(message) {
+            var feedback = document.getElementById("feedback");
+            feedback.textContent = message;
+        }
+
+        function startCountdown() {
+            var countdownMessage = document.getElementById("countdown");
+            countdownMessage.textContent = "Redirecting in " + countdownSeconds + " seconds";
+
+            countdownInterval = setInterval(function() {
+                countdownSeconds--;
+                countdownMessage.textContent = "Redirecting in " + countdownSeconds + " seconds";
+
+                if (countdownSeconds === 0) {
+                    clearInterval(countdownInterval);
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
