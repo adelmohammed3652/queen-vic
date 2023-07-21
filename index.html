@@ -113,6 +113,33 @@
         .teleport-animation {
             animation: teleport 1s ease-in-out;
         }
+
+        /* Center all content in the middle */
+        #name-container,
+        #quiz-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            box-sizing: border-box;
+            height: 100vh;
+        }
+
+        /* Adjust font size for smaller screens (phones) */
+        @media (max-width: 768px) {
+            body {
+                font-size: 18px;
+            }
+        }
+
+        /* Make buttons occupy full width on smaller screens (phones) */
+        @media (max-width: 480px) {
+            .btn {
+                width: 100%;
+                margin: 10px 0;
+            }
+        }
     </style>
 </head>
 <body>
